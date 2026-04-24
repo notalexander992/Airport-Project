@@ -54,6 +54,7 @@ void loadAirports() {
         cout << "Could not open airport-codes.csv" << endl;
         return;
     }
+
     string line;
     getline(file, line);
 
@@ -81,6 +82,35 @@ void loadAirports() {
 
     cout << "Loaded " << airports.size() << " airports." << endl;
 }
+
+void saveAirports() {
+    ofstream file("airport-codes-updated.csv");
+    if (!file.is_open()) {
+        cout << "Could not save file." << endl;
+        return;
+    }
+
+    file << "ident,type,name,elevation_ft,continent,iso_country,iso_region,municipality,gps_code,iata_code,local_code,coordinates\n";
+
+    for (int i = 0; i < (int)airports.size(); i++) {
+        Airport a = airports[i];
+        file << a.ident << ","
+             << a.type << ","
+             << a.name << ","
+             << a.elevation_ft << ","
+             << a.continent << ","
+             << a.iso_country << ","
+             << a.iso_region << ","
+             << a.municipality << ","
+             << a.gps_code << ","
+             << a.iata_code << ","
+             << a.local_code << ","
+             << a.coordinates << "\n";
+    }
+    file.close();
+    cout << "Saved " << airports.size() << " airports to airport-codes-updated.csv." << endl;
+}
+
 void printAirport(Airport a) {
     cout << "-------------------------------------" << endl;
     cout << "Name:         " << a.name << endl;
@@ -116,8 +146,8 @@ void searchByCountry() {
 void searchByName() {
     string query;
     cout << "Enter part of airport name: ";
-    cin.ignore();             
-    getline(cin, query);     
+    cin.ignore();
+    getline(cin, query);
 
     string queryLower = toLower(query);
     int found = 0;
@@ -158,13 +188,64 @@ void searchByIATA() {
     }
 }
 
+void countByType() {
+    vector<string> types;
+    vector<int> counts;
+
+    for (int i = 0; i < (int)airports.size(); i++) {
+        string t = airports[i].type;
+
+        bool found = false;
+        for (int j = 0; j < (int)types.size(); j++) {
+            if (types[j] == t) {
+                counts[j]++;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            types.push_back(t);
+            counts.push_back(1);
+        }
+    }
+
+    cout << "-------------------------------------" << endl;
+    cout << "Airport count by type:" << endl;
+    for (int i = 0; i < (int)types.size(); i++) {
+        cout << "  " << types[i] << ": " << counts[i] << endl;
+    }
+}
+
+void addAirport() {
+    Airport a;
+    cin.ignore(); 
+
+    cout << "Enter ident: ";        getline(cin, a.ident);
+    cout << "Enter type: ";         getline(cin, a.type);
+    cout << "Enter name: ";         getline(cin, a.name);
+    cout << "Enter elevation ft: "; getline(cin, a.elevation_ft);
+    cout << "Enter continent: ";    getline(cin, a.continent);
+    cout << "Enter country code: "; getline(cin, a.iso_country);
+    cout << "Enter region: ";       getline(cin, a.iso_region);
+    cout << "Enter municipality: "; getline(cin, a.municipality);
+    cout << "Enter GPS code: ";     getline(cin, a.gps_code);
+    cout << "Enter IATA code: ";    getline(cin, a.iata_code);
+    cout << "Enter local code: ";   getline(cin, a.local_code);
+    cout << "Enter coordinates (lon, lat): "; getline(cin, a.coordinates);
+
+    airports.push_back(a);
+    cout << "Airport added! Total now: " << airports.size() << endl;
+}
+
 void showMenu() {
     cout << endl;
     cout << "===== NSE Airport Search =====" << endl;
     cout << "1. Search by country code" << endl;
     cout << "2. Search by partial name" << endl;
     cout << "3. Search by IATA code" << endl;
-    cout << "4. Exit" << endl;
+    cout << "4. Count airports by type" << endl;
+    cout << "5. Add a new airport" << endl;
+    cout << "6. Save and exit" << endl;
     cout << "Choose: ";
 }
 
@@ -179,7 +260,13 @@ int main() {
         if (choice == 1)      searchByCountry();
         else if (choice == 2) searchByName();
         else if (choice == 3) searchByIATA();
-        else if (choice == 4) { cout << "Goodbye!" << endl; break; }
+        else if (choice == 4) countByType();
+        else if (choice == 5) addAirport();
+        else if (choice == 6) {
+            saveAirports();
+            cout << "Goodbye!" << endl;
+            break;
+        }
         else cout << "Invalid choice." << endl;
     }
 
