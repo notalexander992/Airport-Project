@@ -5,6 +5,8 @@
 #include <vector>
 
 using namespace std;
+
+//each field in csv data links to my struct names
 struct Airport {
     string ident;
     string type;
@@ -20,6 +22,7 @@ struct Airport {
     string coordinates;
 };
 
+// this converts all strings to lowercase , allowing to make searches case-insensistive
 vector<Airport> airports;
 string toLower(string s) {
     for (int i = 0; i < (int)s.length(); i++) {
@@ -28,18 +31,19 @@ string toLower(string s) {
     return s;
 }
 
+//splits lines in the csv into seperate fields
 vector<string> splitCSVLine(string line) {
     vector<string> fields;
     string current = "";
-    bool insideQuotes = false;
+    bool insideQuotes = false; // if parser is inside quotation marks
 
     for (int i = 0; i < (int)line.length(); i++) {
         char c = line[i];
         if (c == '"') {
             insideQuotes = !insideQuotes;
-        } else if (c == ',' && !insideQuotes) {
+        } else if (c == ',' && !insideQuotes) { // if a comma is outside the quotes it will mark it 
             fields.push_back(current);
-            current = "";
+            current = ""; // reset sequence 
         } else {
             current += c;
         }
@@ -48,6 +52,7 @@ vector<string> splitCSVLine(string line) {
     return fields;
 }
 
+// loads my airport data from csv into the airports vector
 void loadAirports() {
     ifstream file("airport-codes.csv");
     if (!file.is_open()) {
@@ -83,6 +88,7 @@ void loadAirports() {
     cout << "Loaded " << airports.size() << " airports." << endl;
 }
 
+// saves all data from the vector into a new csv file
 void saveAirports() {
     ofstream file("airport-codes-updated.csv");
     if (!file.is_open()) {
@@ -111,6 +117,8 @@ void saveAirports() {
     cout << "Saved " << airports.size() << " airports to airport-codes-updated.csv." << endl;
 }
 
+
+// print all airport , used for the simple menu navigation menu
 void printAirport(Airport a) {
     cout << "-------------------------------------" << endl;
     cout << "Name:         " << a.name << endl;
@@ -123,6 +131,7 @@ void printAirport(Airport a) {
     cout << "Coordinates:  " << a.coordinates << endl;
 }
 
+// searches for airport based on a two letter code like the examples provided
 void searchByCountry() {
     string code;
     cout << "Enter 2-letter country code (e.g. GB, US): ";
@@ -143,6 +152,8 @@ void searchByCountry() {
     cout << "Found " << found << " airport(s) in " << code << "." << endl;
 }
 
+
+// allows the user to search for a specific airprot name
 void searchByName() {
     string query;
     cout << "Enter part of airport name: ";
@@ -167,6 +178,8 @@ void searchByName() {
     cout << "Found " << found << " airport(s) matching \"" << query << "\"." << endl;
 }
 
+
+// allows the users to search by IATA code
 void searchByIATA() {
     string code;
     cout << "Enter 3-letter IATA code (e.g. LHR, JFK): ";
@@ -188,14 +201,16 @@ void searchByIATA() {
     }
 }
 
+
+// counts how many airports exist per airport type 
 void countByType() {
     vector<string> types;
     vector<int> counts;
 
     for (int i = 0; i < (int)airports.size(); i++) {
-        string t = airports[i].type;
+        string t = airports[i].type; // gets current airport 
 
-        bool found = false;
+        bool found = false; // if false it means already exitsts (USE FOR DEBUGGING)
         for (int j = 0; j < (int)types.size(); j++) {
             if (types[j] == t) {
                 counts[j]++;
@@ -203,7 +218,7 @@ void countByType() {
                 break;
             }
         }
-        if (!found) {
+        if (!found) { // if its new adds it to the list
             types.push_back(t);
             counts.push_back(1);
         }
@@ -216,6 +231,8 @@ void countByType() {
     }
 }
 
+
+// function to allow the user to manually input new airports into the system 
 void addAirport() {
     Airport a;
     cin.ignore(); 
@@ -237,6 +254,8 @@ void addAirport() {
     cout << "Airport added! Total now: " << airports.size() << endl;
 }
 
+
+// simple data output into terminal console 
 void showMenu() {
     cout << endl;
     cout << "===== NSE Airport Search =====" << endl;
@@ -254,9 +273,10 @@ int main() {
 
     int choice;
     while (true) {
-        showMenu();
+        showMenu(); // loads airport data 
         cin >> choice;
 
+        // handles users choices
         if (choice == 1)      searchByCountry();
         else if (choice == 2) searchByName();
         else if (choice == 3) searchByIATA();
@@ -269,6 +289,5 @@ int main() {
         }
         else cout << "Invalid choice." << endl;
     }
-
     return 0;
 }
