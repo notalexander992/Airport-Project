@@ -3,11 +3,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
- 
+
 using namespace std;
 
-
-// The CSV file has 12 columns so I need a variable for each one.
 struct Airport {
     string ident;
     string type;
@@ -23,12 +21,13 @@ struct Airport {
     string coordinates;
 };
 
-//walks through csv data line by line 
+vector<Airport> airports;
+
 vector<string> splitCSVLine(string line) {
     vector<string> fields;
     string current = "";
     bool insideQuotes = false;
- 
+
     for (int i = 0; i < (int)line.length(); i++) {
         char c = line[i];
         if (c == '"') {
@@ -40,29 +39,24 @@ vector<string> splitCSVLine(string line) {
             current += c;
         }
     }
-    fields.push_back(current);   // add the last field
+    fields.push_back(current);
     return fields;
 }
 
-
-int main() {
-    vector<Airport> airports;
- 
+void loadAirports() {
     ifstream file("airport-codes.csv");
     if (!file.is_open()) {
         cout << "Could not open airport-codes.csv" << endl;
-        return 1;
+        return;
     }
- 
+
     string line;
-    getline(file, line);   // skip the header row (ident,type,name,...)
- 
+    getline(file, line); 
+
     while (getline(file, line)) {
         vector<string> fields = splitCSVLine(line);
- 
-        // Sometimes a row is broken or missing columns, skip those
         if (fields.size() < 12) continue;
- 
+
         Airport a;
         a.ident        = fields[0];
         a.type         = fields[1];
@@ -76,19 +70,58 @@ int main() {
         a.iata_code    = fields[9];
         a.local_code   = fields[10];
         a.coordinates  = fields[11];
- 
+
         airports.push_back(a);
     }
     file.close();
- 
+
     cout << "Loaded " << airports.size() << " airports." << endl;
- 
-    // Just print out the first 3 to check it worked
-    cout << "First 3 airports:" << endl;
-    for (int i = 0; i < 3 && i < (int)airports.size(); i++) {
-        cout << i+1 << ". " << airports[i].name
-             << " (" << airports[i].iso_country << ")" << endl;
+}
+
+void searchByCountry() {
+    string code;
+    cout << "Enter 2-letter country code (e.g. GB, US): ";
+    cin >> code;
+
+    for (int i = 0; i < (int)code.length(); i++) {
+        code[i] = toupper(code[i]);
     }
- 
+
+    int found = 0;
+    for (int i = 0; i < (int)airports.size(); i++) {
+        if (airports[i].iso_country == code) {
+            cout << airports[i].name << " (" << airports[i].type << ")" << endl;
+            found++;
+        }
+    }
+    cout << "Found " << found << " airports in " << code << "." << endl;
+}
+
+void showMenu() {
+    cout << endl;
+    cout << "===== NSE Airport Search =====" << endl;
+    cout << "1. Search by country code" << endl;
+    cout << "2. Exit" << endl;
+    cout << "Choose: ";
+}
+
+int main() {
+    loadAirports();
+
+    int choice;
+    while (true) {
+        showMenu();
+        cin >> choice;
+
+        if (choice == 1) {
+            searchByCountry();
+        } else if (choice == 2) {
+            cout << "Goodbye!" << endl;
+            break;
+        } else {
+            cout << "Invalid choice." << endl;
+        }
+    }
+
     return 0;
 }
